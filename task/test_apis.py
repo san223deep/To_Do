@@ -18,7 +18,8 @@ def test_get_todo_list_api():
     url = current_host + '/api/todo_list/'
     response = requests.get(url, headers=headers)
     assert response.status_code == 200, r.json()
-    print('Get ToDO list API tested successfully.')
+    print(response.json())
+    print('------- Get ToDO list API tested successfully. ------- ')
 
 
 def test_create_todo_api():
@@ -30,7 +31,7 @@ def test_create_todo_api():
     data = {'description': description, 'title': title, 'due_date': due_date}
     response = requests.post(url, headers=headers, data=data)
     assert response.status_code == 201, print(response.json())
-    print('Create ToDO item API tested successfully.')
+    print('------- Create ToDO item API tested successfully. ------- ')
 
 
 def test_delete_todo_api():
@@ -39,7 +40,7 @@ def test_delete_todo_api():
     url = current_host + '/api/todo_list/' + pk +'/'
     response = requests.delete(url, headers=headers)
     assert response.status_code == 204, "Invalid ToDo item ID"
-    print('delete ToDO item API tested successfully.')
+    print('------- delete ToDO item API tested successfully. ------- ')
 
 
 def test_update_todo_api():
