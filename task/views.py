@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from .models import Task
 from django.db.models import Q
-from .serializers import TaskSerializer
+from .serializers import TaskSerializer, CreateTaskSerializer, UpdateTaskSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -11,7 +11,7 @@ class ToDoList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        todo_list = Task.objects.all()
+        todo_list = Task.objects.filter(user=request.user)
         title = self.request.query_params.get('title')
         todo_status = self.request.query_params.get('status')
         from_date = self.request.query_params.get('from_date')
@@ -33,7 +33,7 @@ class ToDoList(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = TaskSerializer(data=request.data)
+        serializer = CreateTaskSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             response = serializer.data
@@ -46,6 +46,9 @@ class ToDoListUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_task(self, pk):
+        for i in pk:
+            if i not in '1234567890':
+                return False
         task = Task.objects.filter(pk=pk).first()
         if task:
             return task
@@ -56,8 +59,8 @@ class ToDoListUpdate(APIView):
         task_pk = kwargs['pk']
         task = self.get_task(task_pk)
         if not task:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = TaskSerializer(task, data=request.data)
+            return Response({'message': 'Invalid todo ID'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UpdateTaskSerializer(task, data=request.data)
         if serializer.is_valid():
             serializer.save()
             response = serializer.data
@@ -69,6 +72,6 @@ class ToDoListUpdate(APIView):
         task_pk = kwargs['pk']
         task = self.get_task(task_pk)
         if not task:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Invalid todo ID'}, status=status.HTTP_404_NOT_FOUND)
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
